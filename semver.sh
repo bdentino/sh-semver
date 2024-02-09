@@ -489,16 +489,18 @@ apply_rules()
 
 
 
+SORT=false
 FORCE_ALLOW_PREREL=false
 USAGE="Usage:    $0 [-r <rule>] [<version>... ]
 
 Omitting <version>s reads them from STDIN.
 Omitting -r <rule> simply sorts the versions according to semver ordering."
 
-while getopts ar:h o; do
+while getopts sar:h o; do
     case "$o" in
         a) FORCE_ALLOW_PREREL=true ;;
         r) RULES_STRING="$OPTARG||";;
+        s) SORT=true;;
         h) echo "$USAGE" && exit ;;
         ?) echo "$USAGE" && exit 1;;
     esac
@@ -509,7 +511,9 @@ shift $(( OPTIND-1 ))
 VERSIONS=( ${@:-$(cat -)} )
 
 # Sort versions
-VERSIONS=( $(semver_sort "${VERSIONS[@]}") )
+if $SORT; then
+    VERSIONS=( $(semver_sort "${VERSIONS[@]}") )
+fi
 
 if [ -z "$RULES_STRING" ]; then
   printf '%s\n' "${VERSIONS[@]}"
